@@ -1,0 +1,15 @@
+.cache
+.dotnet
+.local
+.mozilla
+.venv
+.vscode-server
+.bash_history
+.bash_logout
+.bash_profile
+.bashrc
+.lesshst
+.python_history
+.wget_hsts
+prompting.py
+myenv
