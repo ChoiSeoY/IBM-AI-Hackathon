@@ -141,6 +141,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ✅ 세션 상태 초기화 (히스토리 저장)
+if "history" not in st.session_state:
+    st.session_state["history"] = {
+        "자기소개서 분석": [],
+        "면접 답변 피드백": [],
+        "면접 예상 질문": []
+    }
+
 # ✅ 사이드바 메뉴 설정
 with st.sidebar:
     menu = option_menu(
@@ -155,6 +163,35 @@ with st.sidebar:
             "nav-link-selected": {"background-color": "#6274CF"},
         }
     )
+
+     # ✅ 히스토리 섹션 추가
+    st.markdown("### 📜 히스토리")
+
+    # 히스토리 카테고리 선택 (자기소개서 분석, 면접 답변 피드백, 면접 예상 질문)
+    selected_category = st.selectbox(
+        "세션 유형을 선택하세요",
+        options=["자기소개서 분석", "면접 답변 피드백", "면접 예상 질문"],
+        index=0
+    )
+
+    # 해당 카테고리의 기록이 있는 경우
+    if st.session_state["history"][selected_category]:
+        selected_session = st.selectbox(
+            "세션을 선택하세요",
+            options=[f"{i+1}. {entry['type']}" for i, entry in enumerate(st.session_state["history"][selected_category])],
+            index=0
+        )
+
+        selected_index = int(selected_session.split(".")[0]) - 1
+        selected_entry = st.session_state["history"][selected_category][selected_index]
+
+        with st.expander(f"📌 {selected_entry['type']} 세부 내용", expanded=True):
+            st.markdown(f"**🔹 입력:** {selected_entry['user_input']}")
+            st.markdown(f"**🔹 AI 응답:**")
+            for key, value in selected_entry["ai_response"].items():
+                st.markdown(f"- **{key}:** {value}")
+    else:
+        st.markdown("❌ 아직 저장된 기록이 없습니다.")
 
 # ✅ 홈 화면
 if menu == "홈 화면":
@@ -195,6 +232,7 @@ if menu == "홈 화면":
     </div>
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
 # ✅ 자기소개서 분석 페이지
 elif menu == "자기소개서 분석":
     st.markdown("<h1 style='text-align: center;'>📝 자기소개서 분석</h1>", unsafe_allow_html=True)
@@ -219,6 +257,16 @@ elif menu == "자기소개서 분석":
                         logic_flow = grammar = vocabulary = f"⚠ JSON 변환 오류: {str(e)}"
                 else:
                     logic_flow = grammar = vocabulary = "❌ 서버 오류 발생"
+            # ✅ 히스토리에 저장
+            st.session_state["history"]["자기소개서 분석"].append({
+                "type": "자기소개서 분석",
+                "user_input": self_intro,
+                "ai_response": {
+                    "논리적 흐름": logic_flow,
+                    "문법 및 맞춤법": grammar,
+                    "어휘 적절성": vocabulary
+                }
+            })     
 
             st.success("✅ 분석 완료!")
 
@@ -253,6 +301,16 @@ elif menu == "면접 답변 피드백":
                 else:
                     strength = weakness = improvement = "❌ 서버 오류 발생"
 
+            # ✅ 히스토리에 저장
+            st.session_state["history"]["면접 답변 피드백"].append({
+                "type": "면접 답변 피드백",
+                "user_input": interview_response,
+                "ai_response": {
+                    "강점 분석": strength,
+                    "약점 분석": weakness,
+                    "개선 사항": improvement
+                }
+            })
             st.success("✅ 분석 완료!")
 
             # ✅ 피드백 UI
@@ -264,6 +322,7 @@ elif menu == "면접 답변 피드백":
                 <div class="feedback-item vocabulary">🔧 <strong>개선 사항:</strong> {improvement}</div>
             </div>
             """, unsafe_allow_html=True)
+
 # ✅ 면접 예상 질문 생성
 elif menu == "면접 예상 질문 생성":
     st.title("📝 면접 예상 질문 생성")
@@ -303,6 +362,13 @@ elif menu == "면접 예상 질문 생성":
                 except json.JSONDecodeError as e:
                     print(f"❌ JSON 변환 오류: {e}")
                     questions = [f"❌ JSON 변환 오류: {str(e)}"]
+
+            # ✅ 히스토리에 저장
+            st.session_state["history"]["면접 예상 질문"].append({
+                "type": "면접 예상 질문",
+                "user_input": job_info,
+                "ai_response": {f"Q{idx+1}": q for idx, q in enumerate(questions)}
+            })
 
             st.success("✅ 질문 생성 완료!")
             # ✅ 면접 예상 질문 피드백 UI (질문 박스만 존재하도록 수정)
