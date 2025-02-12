@@ -129,7 +129,15 @@ st.markdown("""
         justify-content: center;
         margin-top: 30px;
     }
-
+    /* 질문 박스 (통일된 디자인) */
+    .question-box {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+        background-color: #e3f2fd;  /* 통일된 배경색 */
+        border-left: 6px solid #42a5f5;  /* 파란색 강조 */
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -281,6 +289,7 @@ elif menu == "면접 예상 질문 생성":
                         data = response.json()  # AI 응답을 JSON으로 변환
                         questions = data.get("feedback", {}).get("questions", [])  # 질문 리스트 가져오기
 
+                        questions = questions[:question_count]  
                         if not questions:
                             questions = ["❌ 질문을 생성할 수 없습니다. 다시 시도해주세요."]
                     
@@ -296,7 +305,16 @@ elif menu == "면접 예상 질문 생성":
                     questions = [f"❌ JSON 변환 오류: {str(e)}"]
 
             st.success("✅ 질문 생성 완료!")
-            st.subheader("🎤 AI 면접 예상 질문")
+            # ✅ 면접 예상 질문 피드백 UI (질문 박스만 존재하도록 수정)
+            question_list_html = "".join([
+                f"<li><strong>Q{idx}:</strong> {question}</li>" for idx, question in enumerate(questions, start=1)
+            ])
 
-            for idx, question in enumerate(questions, start=1):
-                st.markdown(f"🔹 **Q{idx}:** {question}")
+            st.markdown(f"""
+                <div class="feedback-box">
+                    <h3>AI 면접 예상 질문</h3>
+                    <ul class="question-list">
+                        {question_list_html}
+                    </ul>
+                </div>
+            """, unsafe_allow_html=True)
