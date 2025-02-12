@@ -28,7 +28,7 @@ class SelfIntroRequest(BaseModel):
     user_text: str
 
 # Watsonx AI 분석 함수 (model.py에서 가져오기)
-from model import analyze_self_intro, qanda_self_intro
+from model import analyze_self_intro, qanda_self_intro, mkq_self_intro
 
 # API 엔드포인트 (POST 요청) -자소서
 @app.post("/analyze")
@@ -36,10 +36,16 @@ async def analyze_intro(request: SelfIntroRequest):
     feedback = analyze_self_intro(request.user_text)
     return {"feedback": feedback}
 
-# API 엔드포인트 (POST 요청) -면접접
+# API 엔드포인트 (POST 요청) -면접
 @app.post("/qanda")
 async def qanda_intro(request: SelfIntroRequest):
     feedback = qanda_self_intro(request.user_text)
+    return {"feedback": feedback}
+
+# API 엔드포인트 (POST 요청) -예상질문생성
+@app.post("/mkq")
+async def mkq_intro(request: SelfIntroRequest):
+    feedback = mkq_self_intro(request.user_text)
     return {"feedback": feedback}
 
 # 서버 상태 확인 엔드포인트
